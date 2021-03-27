@@ -13,16 +13,18 @@ class BankAccount():
         self.transactions = []
 
     def apply(self, event):
-        transaction = Transaction(id=event.id, amount=event.amount)
-        self.transactions.append(transaction)
-        if event.type == EVENT_TYPE.ACCOUNTCREATED:
-            self.id = event.id
-            self.name = event.name
+        if event["eventType"] == EVENT_TYPE.ACCOUNTCREATED:
+            self.id = event["data"]["id"]
+            self.name = event["data"]["name"]
             self.balance = 0
-        elif event.type == EVENT_TYPE.DESPOITED:
-            self.balance += event.amount
-        elif event.type == EVENT_TYPE.WITHDRAWED:
-            self.balance -= event.amount
+        elif event["eventType"] == EVENT_TYPE.DESPOITED:
+            transaction = Transaction(id=event["data"]["id"], amount=event["data"]["amount"])
+            self.transactions.append(transaction)
+            self.balance += event["data"]["amount"]
+        elif event["eventType"] == EVENT_TYPE.WITHDRAWED:
+            transaction = Transaction(id=event["data"]["id"], amount=event["data"]["amount"])
+            self.transactions.append(transaction)
+            self.balance -= event["data"]["amount"]
 
 
 

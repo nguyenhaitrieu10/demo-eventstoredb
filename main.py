@@ -28,15 +28,21 @@ def main():
         print(res.status_code)
 
     # Read all events from BankAccount stream
-    res = eventstoredb.readAllEvents(stream)
+    res = eventstoredb.readStream(stream)
     print(res.status_code)
-    results = res.json()
-    print(results)
     with open("output.json", "w") as f:
-        json.dump(results, f)
+        json.dump(res.json(), f)
 
     # Aggregate all transactions
     bankAccount = BankAccount()
+    for i in range(len(eventsToRun)):
+        res = eventstoredb.readEventAt(stream, i)
+        res = res.json()
+        data = res["content"]
 
+        bankAccount.apply(data)
 
+    print(bankAccount.balance)
+    # with open("output.json", "w") as f:
+    #     json.dump(res.json(), f)
 main()

@@ -16,18 +16,7 @@ def sendEvents(data, stream):
     )
     return res
 
-def readAllEvents(stream):
-    res = requests.get(
-        url = 'https://%s/streams/%s/0/forward/999' %(DB_HOST, stream),
-        headers = {
-            'Accept': 'application/vnd.eventstore.atom+json',
-        },
-        verify=False,
-        auth=AUTHEN
-    )
-    return res
-
-def readStreasm(stream):
+def readStream(stream):
     res = requests.get(
         url = 'https://%s/streams/%s' %(DB_HOST, stream),
         headers = {
@@ -39,17 +28,28 @@ def readStreasm(stream):
     return res
 
 
-def readEvent(stream):
+def readEventAt(stream, position):
     res = requests.get(
-        url = 'https://%s/streams/%s/0' %(DB_HOST, stream),
+        url = 'https://%s/streams/%s/%s' %(DB_HOST, stream, position),
         headers = {
-            'Accept': 'application/json',
+            'Accept': 'application/vnd.eventstore.atom+json',
         },
         verify=False,
         auth=AUTHEN
     )
     return res
 
+
+def readEventFromTo(stream, fr, to):
+    res = requests.get(
+        url = 'https://%s/streams/%s/%s/forward/%s' %(DB_HOST, stream, fr, to),
+        headers = {
+            'Accept': 'application/vnd.eventstore.atom+json',
+        },
+        verify=False,
+        auth=AUTHEN
+    )
+    return res
 
 def deleteStream(stream):
     res = requests.delete(
