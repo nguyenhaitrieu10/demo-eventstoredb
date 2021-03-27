@@ -1,24 +1,42 @@
 import json
 import requests
-from bank import BankAccount, Transaction
+from bank import BankAccount
 from event import AccountCreatedEvent, FundsDepoitedEvent, FundsWithDrawedEvent
+import eventstoredb
 import uuid
 
 def streamId(id):
     return "BankAccount-" + str(id)
 
 def main():
-    id = str(uuid.uuid4())
+    # aggregateId = "6d397bd4-f095-405e-b3bb-75ff3d7a763b"
+    aggregateId = str(uuid.uuid4())
     eventsToRun = []
-    eventsToRun.append(AccountCreatedEvent(id, "Vincent"))
-    eventsToRun.append(FundsDepoitedEvent(id, 150))
-    eventsToRun.append(FundsDepoitedEvent(id, 100))
-    eventsToRun.append(FundsWithDrawedEvent(id, 60))
-    eventsToRun.append(FundsWithDrawedEvent(id, 94))
-    eventsToRun.append(FundsDepoitedEvent(id, 4))
+    eventsToRun.append(AccountCreatedEvent(aggregateId, "Vincent"))
+    eventsToRun.append(FundsDepoitedEvent(aggregateId, 150))
+    eventsToRun.append(FundsDepoitedEvent(aggregateId, 100))
+    eventsToRun.append(FundsWithDrawedEvent(aggregateId, 60))
+    eventsToRun.append(FundsWithDrawedEvent(aggregateId, 94))
+    eventsToRun.append(FundsDepoitedEvent(aggregateId, 4))
 
+    stream = streamId(aggregateId)
     for event in eventsToRun:
+        eventId = str(uuid.uuid4())
+        print(eventId)
+        data = event.PayLoad(eventId)
+        res = eventstoredb.sendEvents(data, stream)
+        print(res.status_code)
 
+    # Read all events from BankAccount stream
+    res = eventstoredb.readAllEvents(stream)
+    print(res.status_code)
+    results = res.json()
+    print(results)
+    with open("output.json", "w") as f:
+        json.dump(results, f)
+
+    # Aggregate all transactions
+    bankAccount = BankAccount()
 
 
 main()

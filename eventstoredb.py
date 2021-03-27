@@ -1,17 +1,14 @@
 import json
 import requests
 
-CONFIG_DIR = 'configs/'
 DB_HOST = "node3.eventstore:2113"
 AUTHEN = ('admin', 'changeit')
 
-def createStream(payLoad, stream, version):
-    data = open(payLoad)
+def sendEvents(data, stream):
     res = requests.post(
-        url ='https://%s/streams/%s' %(DB_HOST, stream),
+        url='https://%s/streams/%s' % (DB_HOST, stream),
         headers={
             "Content-Type": "application/vnd.eventstore.events+json",
-            "ES-CurrentVersion": version
         },
         data=data,
         verify=False,
@@ -19,15 +16,12 @@ def createStream(payLoad, stream, version):
     )
     return res
 
-def sendEvents(payLoad, stream, version):
-    data = open(payLoad)
-    res = requests.post(
-        url = 'https://%s/streams/%s' %(DB_HOST, stream),
-        headers={
-            "Content-Type": "application/vnd.eventstore.events+json",
-            "ES-ExpectedVersion": version
+def readAllEvents(stream):
+    res = requests.get(
+        url = 'https://%s/streams/%s/0/forward/999' %(DB_HOST, stream),
+        headers = {
+            'Accept': 'application/vnd.eventstore.atom+json',
         },
-        data=data,
         verify=False,
         auth=AUTHEN
     )
