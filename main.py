@@ -4,6 +4,7 @@ from bank import BankAccount
 from event import AccountCreatedEvent, FundsDepoitedEvent, FundsWithDrawedEvent
 import eventstoredb
 import uuid
+from event import EVENT_TYPE
 
 def streamId(id):
     return "BankAccount-" + str(id)
@@ -22,14 +23,14 @@ def main():
     stream = streamId(aggregateId)
     for event in eventsToRun:
         eventId = str(uuid.uuid4())
-        print(eventId)
+        #print(eventId)
         data = event.PayLoad(eventId)
         res = eventstoredb.sendEvents(data, stream)
-        print(res.status_code)
+        #print(res.status_code)
 
     # Read all events from BankAccount stream
     res = eventstoredb.readStream(stream)
-    print(res.status_code)
+    #print(res.status_code)
     with open("output.json", "w") as f:
         json.dump(res.json(), f)
 
@@ -42,7 +43,14 @@ def main():
 
         bankAccount.apply(data)
 
-    print(bankAccount.balance)
+    print("List of transactions: ")
+    for transaction in bankAccount.transactions:
+        amount = transaction.amount
+        if transaction.type == EVENT_TYPE.WITHDRAWED:
+            amount = -amount
+        print("%s:    %s usd" %(transaction.timestamp, amount))
+
+    print("\nCurrent Your Bank Balance: %s usd" %bankAccount.balance)
     # with open("output.json", "w") as f:
     #     json.dump(res.json(), f)
 main()
